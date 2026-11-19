@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Quote requests | Shakaaraah</title>
+  <link rel="icon" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <img class="logo logo--small" src="{{ url_for('static', filename='logo.png') }}" width="140" alt="Shakaaraah Communications">
+    <form method="post" action="{{ url_for('logout') }}">
+      <button class="button button--plain" type="submit">Sign out</button>
+    </form>
+  </header>
+
+  <main class="wide">
+    <h1>Quote requests</h1>
+    <p class="muted">{{ total }} request{{ '' if total == 1 else 's' }} received so far.</p>
+
+    {% for message in get_flashed_messages() %}
+      <p class="notice" role="alert">{{ message }}</p>
+    {% endfor %}
+
+    <section class="card">
+      <h2>Download as Excel</h2>
+      <p class="muted">Pick the first and last day you want. Both days are included, in Lagos time.</p>
+      <form class="row" method="get" action="{{ url_for('export_quotes') }}">
+        <div>
+          <label for="from">From</label>
+          <input id="from" name="from" type="date" value="{{ default_from }}" max="{{ today }}" required>
+        </div>
+        <div>
+          <label for="to">To</label>
+          <input id="to" name="to" type="date" value="{{ today }}" max="{{ today }}" required>
+        </div>
+        <button class="button" type="submit">Download Excel file</button>
+      </form>
+    </section>
+
+    <h2>Latest requests</h2>
+    {% if pagination.items %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Received</th><th>Name</th><th>WhatsApp</th><th>Email</th><th>Service</th><th>Message</th></tr>
+          </thead>
+          <tbody>
+            {% for quote in pagination.items %}
+            <tr>
+              <td>{{ quote.created_at | lagos_time }}</td>
+              <td>{{ quote.name }}</td>
+              <td>{{ quote.whatsapp }}</td>
+              <td>{{ quote.email }}</td>
+              <td>{{ quote.service }}</td>
+              <td class="muted">{{ quote.message | truncate(140) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="pager">
+        {% if pagination.has_prev %}<a href="{{ url_for('dashboard', page=pagination.prev_num) }}">Newer</a>{% endif %}
+        <span class="muted">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+        {% if pagination.has_next %}<a href="{{ url_for('dashboard', page=pagination.next_num) }}">Older</a>{% endif %}
+      </p>
+    {% else %}
+      <div class="empty">
+        <h3>No quote requests yet</h3>
+        <p class="muted">Requests appear here the moment someone sends the form on your website. This is also where you download them as an Excel file.</p>
+        <a class="button" href="{{ frontend_url }}/website-offer" target="_blank" rel="noopener">Open the website offer page</a>
+      </div>
+    {% endif %}
+  </main>
+</body>
+</html>
